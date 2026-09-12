@@ -16,13 +16,20 @@ app.use(express.json());
 // POSTGRESQL DATABASE CONNECTION
 // ==========================================
 
+//const pool = new Pool({
+//    user: "postgres",
+//    host: "localhost",
+//    database: "iot_platform",
+//    password: "IoTKizwe@2026",
+//    port: 5432
+//});
 const pool = new Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "iot_platform",
-    password: "IoTKizwe@2026",
-    port: 5432
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
+
 
 
 // ==========================================

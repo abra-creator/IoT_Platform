@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const { Pool } = require("pg");
 
@@ -10,27 +11,33 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 
 app.use(express.json());
+app.use(express.static("public"));
 
 
 // ==========================================
 // POSTGRESQL DATABASE CONNECTION
 // ==========================================
 
-//const pool = new Pool({
-//    user: "postgres",
-//    host: "localhost",
-//    database: "iot_platform",
-//    password: "IoTKizwe@2026",
-//    port: 5432
-//});
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    user: "postgres",
+    host: "localhost",
+    database: "iot_platform",
+    password: "IoTKizwe@2026",
+    port: 5432,
+      ssl: false
 });
-
-
+//const pool = new Pool({
+//    connectionString: process.env.DATABASE_URL,
+//    ssl: {
+//      rejectUnauthorized: false
+//    }
+//});
+//const pool = new Pool({
+//    connectionString: process.env.DATABASE_URL,
+//    ssl: process.env.DATABASE_URL
+//        ? { rejectUnauthorized: false }
+//        : false
+//});
 
 // ==========================================
 // TEST DATABASE CONNECTION
@@ -45,21 +52,53 @@ pool.query("SELECT NOW()", (error, result) => {
         console.log("✅ PostgreSQL connected successfully!");
         console.log("Database time:", result.rows[0].now);
     }
-
 });
-
 
 // ==========================================
 // HOME ROUTE
 // ==========================================
 
-app.get("/", (req, res) => {
+//app.get("/", (req, res) => {
 
-    res.send("IoT Platform Server is Running!");
+//    res.send("IoT Platform Server is Running!");
 
+//});
+
+app.get("/api/devices/latest", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                device_id,
+                distance,
+                created_at
+            FROM sensor_data
+            ORDER BY created_at DESC
+            LIMIT 1
+        `);
+
+        if (result.rows.length === 0) {
+            return res.json({
+                success: true,
+                data: null
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error("❌ Error getting latest sensor data:");
+        console.error(error.message);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to get latest sensor data",
+            error: error.message
+        });
+    }
 });
-
-
 // ==========================================
 // SENSOR API
 // ==========================================
@@ -79,7 +118,6 @@ app.post("/api/sensor", async (req, res) => {
 
         console.log("Sensor data received:");
         console.log(req.body);
-
 
         // Save sensor data into PostgreSQL
         const result = await pool.query(
@@ -132,7 +170,6 @@ app.post("/api/sensor", async (req, res) => {
     }
 
 });
-
 
 // ==========================================
 // START SERVER

@@ -1,85 +1,94 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>IoT Platform Dashboard</title>
+```
+<title>IoT Platform Dashboard</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+    }
 
-        header {
-            background: #1f2937;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
+    header {
+        background: #1f2937;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
 
-        header h1 {
-            margin: 0;
-        }
+    header h1 {
+        margin: 0;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 20px;
-        }
+    .container {
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 20px;
+    }
 
-        .device-card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .device-card {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
 
-        .device-card h2 {
-            margin-top: 0;
-        }
+    .device-card h2 {
+        margin-top: 0;
+    }
 
-        .sensor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+    .sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
 
-        .sensor-box {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid #e5e7eb;
-        }
+    .sensor-box {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
 
-        .sensor-box h3 {
-            margin: 0 0 10px;
-            color: #6b7280;
-        }
+    .sensor-box h3 {
+        margin: 0 0 10px;
+        color: #6b7280;
+    }
 
-        .value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #111827;
-        }
+    .value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #111827;
+    }
 
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-        }
+    #status {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 18px;
+    }
 
-        .online {
-            color: green;
-        }
+    .online {
+        color: green;
+    }
 
-        .offline {
-            color: red;
-        }
-    </style>
+    .offline {
+        color: red;
+    }
+
+    .checking {
+        color: #d97706;
+    }
+</style>
+```
+
 </head>
 
 <body>
@@ -91,50 +100,104 @@
 
 <div class="container">
 
-    <div class="device-card">
+```
+<div class="device-card">
 
-        <h2>Device: ESP32-Gate01</h2>
+    <h2>Device: ESP32-Gate01</h2>
 
-        <div class="sensor-grid">
+    <div class="sensor-grid">
 
-            <div class="sensor-box">
-                <h3>Distance</h3>
-                <div class="value">
-                    <span id="distance">--</span> cm
-                </div>
+        <div class="sensor-box">
+            <h3>Distance</h3>
+            <div class="value">
+                <span id="distance">--</span> cm
             </div>
-
-            <div class="sensor-box">
-                <h3>Device ID</h3>
-                <div class="value" style="font-size:20px;">
-                    <span id="deviceId">--</span>
-                </div>
-            </div>
-
-            <div class="sensor-box">
-                <h3>Last Updated</h3>
-                <div class="value" style="font-size:18px;">
-                    <span id="updated">--</span>
-                </div>
-            </div>
-
         </div>
 
-        <div id="status" class="offline">
-            Connecting to server...
+        <div class="sensor-box">
+            <h3>Device ID</h3>
+            <div class="value" style="font-size:20px;">
+                <span id="deviceId">--</span>
+            </div>
+        </div>
+
+        <div class="sensor-box">
+            <h3>Last Updated</h3>
+            <div class="value" style="font-size:18px;">
+                <span id="updated">--</span>
+            </div>
         </div>
 
     </div>
 
+    <div id="status" class="checking">
+        ● Connecting to server...
+    </div>
+
+</div>
+```
+
 </div>
 
 <script>
+
+// Device is considered offline if no new data
+// has been received for more than 30 seconds.
+const OFFLINE_TIMEOUT = 30000;
+
+
+function formatDateTime(dateString) {
+
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) {
+        return "--";
+    }
+
+    return date.toLocaleString("en-TZ", {
+        timeZone: "Africa/Dar_es_Salaam",
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+}
+
+
+function updateDeviceStatus(createdAt) {
+
+    const status = document.getElementById("status");
+
+    const lastUpdate = new Date(createdAt);
+    const now = new Date();
+
+    const age = now.getTime() - lastUpdate.getTime();
+
+    if (age <= OFFLINE_TIMEOUT) {
+
+        status.textContent = "● Device Online";
+        status.className = "online";
+
+    } else {
+
+        status.textContent = "● Device Offline";
+        status.className = "offline";
+    }
+}
+
 
 async function loadSensorData() {
 
     try {
 
         const response = await fetch("/api/devices/latest");
+
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
 
         const result = await response.json();
 
@@ -147,29 +210,28 @@ async function loadSensorData() {
                 result.data.device_id;
 
             document.getElementById("updated").textContent =
-                result.data.created_at;
+                formatDateTime(result.data.created_at);
 
-            const status = document.getElementById("status");
-
-            status.textContent = "● Device Online";
-            status.className = "online";
+            updateDeviceStatus(result.data.created_at);
 
         } else {
 
             document.getElementById("status").textContent =
                 "● No sensor data available";
 
-            document.getElementById("status").className = "offline";
+            document.getElementById("status").className =
+                "offline";
         }
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Dashboard error:", error);
 
         document.getElementById("status").textContent =
             "● Server connection failed";
 
-        document.getElementById("status").className = "offline";
+        document.getElementById("status").className =
+            "offline";
     }
 }
 
@@ -178,7 +240,7 @@ async function loadSensorData() {
 loadSensorData();
 
 
-// Refresh every 2 seconds
+// Check server every 2 seconds
 setInterval(loadSensorData, 2000);
 
 </script>

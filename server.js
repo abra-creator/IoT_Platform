@@ -18,26 +18,32 @@ app.use(express.static("public"));
 // POSTGRESQL DATABASE CONNECTION
 // ==========================================
 
-const pool = new Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "iot_platform",
-    password: "IoTKizwe@2026",
-    port: 5432,
-      ssl: false
-});
 //const pool = new Pool({
-//    connectionString: process.env.DATABASE_URL,
-//    ssl: {
-//      rejectUnauthorized: false
-//    }
+//    user: "postgres",
+//    host: "localhost",
+//    database: "iot_platform",
+//    password: "IoTKizwe@2026",
+//    port: 5432,
+//      ssl: false
 //});
 //const pool = new Pool({
 //    connectionString: process.env.DATABASE_URL,
-//    ssl: process.env.DATABASE_URL
-//        ? { rejectUnauthorized: false }
-//        : false
+//   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 //});
+
+const pool = process.env.DATABASE_URL
+    ? new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      })
+    : new Pool({
+        user: "postgres",
+        host: "localhost",
+        database: "iot_platform",
+        password: "IoTKizwe@2026",
+        port: 5432,
+        ssl: false
+      });
 
 // ==========================================
 // TEST DATABASE CONNECTION
@@ -47,7 +53,8 @@ pool.query("SELECT NOW()", (error, result) => {
 
     if (error) {
         console.error("❌ PostgreSQL connection failed:");
-        console.error(error.message);
+        //console.error(error.message);
+        console.error(error);
     } else {
         console.log("✅ PostgreSQL connected successfully!");
         console.log("Database time:", result.rows[0].now);
@@ -57,12 +64,6 @@ pool.query("SELECT NOW()", (error, result) => {
 // ==========================================
 // HOME ROUTE
 // ==========================================
-
-//app.get("/", (req, res) => {
-
-//    res.send("IoT Platform Server is Running!");
-
-//});
 
 app.get("/api/devices/latest", async (req, res) => {
     try {

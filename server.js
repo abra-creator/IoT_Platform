@@ -91,7 +91,7 @@ app.get("/api/devices/latest", async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error getting latest sensor data:");
-        console.error(error.message);
+        console.error(error);
 
         res.status(500).json({
             success: false,
@@ -100,6 +100,37 @@ app.get("/api/devices/latest", async (req, res) => {
         });
     }
 });
+
+app.get("/api/sensor/history", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                id,
+                device_id,
+                distance,
+                created_at
+            FROM sensor_data
+            ORDER BY created_at DESC
+            LIMIT 20
+        `);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+
+    } catch (error) {
+        console.error("❌ Error getting sensor history:");
+        console.error(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to get sensor history",
+            error: error.message
+        });
+    }
+});
+
 // ==========================================
 // SENSOR API
 // ==========================================

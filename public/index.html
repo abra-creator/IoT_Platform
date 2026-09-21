@@ -32,14 +32,17 @@
         padding: 20px;
     }
 
-    .device-card {
+    .device-card,
+    .history-card {
         background: white;
         border-radius: 10px;
         padding: 25px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
     }
 
-    .device-card h2 {
+    .device-card h2,
+    .history-card h2 {
         margin-top: 0;
     }
 
@@ -86,6 +89,42 @@
     .checking {
         color: #d97706;
     }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+        background: #f9fafb;
+        color: #374151;
+    }
+
+    tr:hover {
+        background: #f9fafb;
+    }
+
+    .distance-value {
+        font-weight: bold;
+    }
+
+    .history-status {
+        margin-top: 15px;
+        color: #6b7280;
+        font-size: 14px;
+    }
 </style>
 ```
 
@@ -101,6 +140,7 @@
 <div class="container">
 
 ```
+<!-- Current Device -->
 <div class="device-card">
 
     <h2>Device: ESP32-Gate01</h2>
@@ -135,17 +175,52 @@
     </div>
 
 </div>
+
+
+<!-- Sensor History -->
+<div class="history-card">
+
+    <h2>Sensor History</h2>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Device ID</th>
+                    <th>Distance</th>
+                </tr>
+            </thead>
+
+            <tbody id="historyTable">
+
+                <tr>
+                    <td colspan="3">Loading sensor history...</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div id="historyStatus" class="history-status">
+        Loading history...
+    </div>
+
+</div>
 ```
 
 </div>
 
 <script>
 
-// Device is considered offline if no new data
-// has been received for more than 30 seconds.
 const OFFLINE_TIMEOUT = 30000;
 
 
+// Format timestamp into Tanzania local time
 function formatDateTime(dateString) {
 
     const date = new Date(dateString);
@@ -167,6 +242,7 @@ function formatDateTime(dateString) {
 }
 
 
+// Update Online / Offline status
 function updateDeviceStatus(createdAt) {
 
     const status = document.getElementById("status");
@@ -189,17 +265,20 @@ function updateDeviceStatus(createdAt) {
 }
 
 
+// Load latest sensor data
 async function loadSensorData() {
 
     try {
 
-        const response = await fetch("/api/devices/latest");
+        const response =
+            await fetch("/api/devices/latest");
 
         if (!response.ok) {
             throw new Error("HTTP error " + response.status);
         }
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         if (result.success && result.data) {
 
@@ -212,7 +291,9 @@ async function loadSensorData() {
             document.getElementById("updated").textContent =
                 formatDateTime(result.data.created_at);
 
-            updateDeviceStatus(result.data.created_at);
+            updateDeviceStatus(
+                result.data.created_at
+            );
 
         } else {
 
@@ -225,7 +306,10 @@ async function loadSensorData() {
 
     } catch (error) {
 
-        console.error("Dashboard error:", error);
+        console.error(
+            "Dashboard error:",
+            error
+        );
 
         document.getElementById("status").textContent =
             "● Server connection failed";
@@ -236,12 +320,110 @@ async function loadSensorData() {
 }
 
 
+// Load sensor history
+async function loadSensorHistory() {
+
+    try {
+
+        const response =
+            await fetch("/api/sensor/history");
+
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+
+        const result =
+            await response.json();
+
+        const table =
+            document.getElementById("historyTable");
+
+        const historyStatus =
+            document.getElementById("historyStatus");
+
+
+        if (
+            result.success &&
+            result.data &&
+            result.data.length > 0
+        ) {
+
+            table.innerHTML = "";
+
+            result.data.forEach(function(record) {
+
+                const row =
+                    document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>
+                        ${formatDateTime(record.created_at)}
+                    </td>
+
+                    <td>
+                        ${record.device_id}
+                    </td>
+
+                    <td class="distance-value">
+                        ${record.distance} cm
+                    </td>
+                `;
+
+                table.appendChild(row);
+
+            });
+
+            historyStatus.textContent =
+                "Showing the latest " +
+                result.data.length +
+                " sensor readings.";
+
+        } else {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="3">
+                        No sensor history available.
+                    </td>
+                </tr>
+            `;
+
+            historyStatus.textContent =
+                "No sensor readings found.";
+        }
+
+    } catch (error) {
+
+        console.error(
+            "History error:",
+            error
+        );
+
+        document.getElementById("historyTable").innerHTML = `
+            <tr>
+                <td colspan="3">
+                    Unable to load sensor history.
+                </td>
+            </tr>
+        `;
+
+        document.getElementById("historyStatus").textContent =
+            "Failed to load sensor history.";
+    }
+}
+
+
 // Load immediately
 loadSensorData();
+loadSensorHistory();
 
 
-// Check server every 2 seconds
+// Refresh current value every 2 seconds
 setInterval(loadSensorData, 2000);
+
+
+// Refresh history every 10 seconds
+setInterval(loadSensorHistory, 10000);
 
 </script>
 

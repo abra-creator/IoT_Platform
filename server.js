@@ -18,19 +18,6 @@ app.use(express.static("public"));
 // POSTGRESQL DATABASE CONNECTION
 // ==========================================
 
-//const pool = new Pool({
-//    user: "postgres",
-//    host: "localhost",
-//    database: "iot_platform",
-//    password: "IoTKizwe@2026",
-//    port: 5432,
-//      ssl: false
-//});
-//const pool = new Pool({
-//    connectionString: process.env.DATABASE_URL,
-//   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
-//});
-
 const pool = process.env.DATABASE_URL
     ? new Pool({
         connectionString: process.env.DATABASE_URL,
@@ -70,7 +57,11 @@ app.get("/api/devices/latest", async (req, res) => {
         const result = await pool.query(`
             SELECT
                 device_id,
+                temperature,
+                humidity,
                 distance,
+                motion,
+                voltage,
                 created_at
             FROM sensor_data
             ORDER BY created_at DESC
@@ -107,7 +98,11 @@ app.get("/api/sensor/history", async (req, res) => {
             SELECT
                 id,
                 device_id,
+                temperature,
+                humidity,
                 distance,
+                motion,
+                voltage,
                 created_at
             FROM sensor_data
             ORDER BY created_at DESC

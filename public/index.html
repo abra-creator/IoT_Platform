@@ -155,6 +155,34 @@
         </div>
 
         <div class="sensor-box">
+            <h3>Temperature</h3>
+            <div class="value">
+                <span id="temperature">--</span> °C
+            </div>
+        </div>
+
+        <div class="sensor-box">
+            <h3>Humidity</h3>
+            <div class="value">
+                <span id="humidity">--</span> %
+            </div>
+        </div>
+
+        <div class="sensor-box">
+            <h3>Motion</h3>
+            <div class="value">
+                <span id="motion">--</span>
+            </div>
+        </div>
+
+        <div class="sensor-box">
+            <h3>Voltage</h3>
+            <div class="value">
+                <span id="voltage">--</span> V
+            </div>
+        </div>
+
+        <div class="sensor-box">
             <h3>Device ID</h3>
             <div class="value" style="font-size:20px;">
                 <span id="deviceId">--</span>
@@ -190,7 +218,11 @@
                 <tr>
                     <th>Time</th>
                     <th>Device ID</th>
+                    <th>Temperature</th>
+                    <th>Humidity</th>
                     <th>Distance</th>
+                    <th>Motion</th>
+                    <th>Voltage</th>
                 </tr>
             </thead>
 
@@ -285,6 +317,18 @@ async function loadSensorData() {
             document.getElementById("distance").textContent =
                 result.data.distance;
 
+            document.getElementById("temperature").textContent =
+                result.data.temperature ?? "--";
+
+            document.getElementById("humidity").textContent =
+                result.data.humidity ?? "--";
+
+            document.getElementById("motion").textContent =
+                result.data.motion ? "Detected" : "No Motion";
+
+            document.getElementById("voltage").textContent =
+                result.data.voltage ?? "--";
+
             document.getElementById("deviceId").textContent =
                 result.data.device_id;
 
@@ -364,8 +408,24 @@ async function loadSensorHistory() {
                         ${record.device_id}
                     </td>
 
+                    <td>
+                        ${record.temperature ?? "--"} °C
+                    </td>
+
+                    <td>
+                        ${record.humidity ?? "--"} %
+                    </td>
+
                     <td class="distance-value">
                         ${record.distance} cm
+                    </td>
+
+                    <td>
+                        ${record.motion ? "Detected" : "No Motion"}
+                    </td>
+
+                    <td>
+                        ${record.voltage ?? "--"} V
                     </td>
                 `;
 

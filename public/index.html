@@ -544,19 +544,70 @@ function updateDistanceChart(records) {
 
             maintainAspectRatio: false,
 
+            interaction: {
+                mode: "index",
+                intersect: false
+            },
+
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+
+                tooltip: {
+                    enabled: true,
+                    titleFont: {
+                        size: 14
+                    },
+                    bodyFont: {
+                        size: 14
+                    }
+                }
+            },
+
             scales: {
                 y: {
                     beginAtZero: true,
+
                     title: {
                         display: true,
-                        text: "Distance (cm)"
+                        text: "Distance (cm)",
+                        font: {
+                            size: 15
+                        }
+                    },
+
+                    ticks: {
+                        font: {
+                            size: 13
+                        }
                     }
                 },
 
                 x: {
                     title: {
                         display: true,
-                        text: "Time"
+                        text: "Time",
+                        font: {
+                            size: 15
+                        }
+                    },
+
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+
+                        maxRotation: 0,
+                        minRotation: 0,
+
+                        autoSkip: true,
+                        maxTicksLimit: 6
                     }
                 }
             }

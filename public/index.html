@@ -276,11 +276,16 @@
     }
 
     .device-id-value {
-        font-size: 20px !important;
+        font-size: 14px !important;
+        white-space: nowrap !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        display: inline-block;
         }
     
     .last-updated-value {
         font-size: 18px !important;
+        white-space: nowrap;
     }
 
    /* .device-id-value {
@@ -288,9 +293,9 @@
         overflow-wrap: anywhere;
     }*/
 
-    .last-updated-value {
+    /*.last-updated-value {
         font-size: 15px !important;
-    }
+    }*/
 
 }
 </style>
@@ -358,7 +363,7 @@
             </div>
         </div>
 
-        <div class="sensor-box">
+        <div class="sensor-box device-id-card">
             <h3>Device ID</h3>
             <div class="value device-id-value">
                 <span id="deviceId">--</span>

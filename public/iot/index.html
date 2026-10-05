@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Devices - MY IoT PLATFORM</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            color: #111827;
+        }
+
+        .page-header {
+            background: #1f2937;
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-content h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .header-content p {
+            margin: 6px 0 0;
+            color: #d1d5db;
+        }
+
+        .main-nav {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .main-nav a {
+            padding: 15px 18px;
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .main-nav a:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .main-nav a.active {
+            color: #111827;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 25px;
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .page-title p {
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .device-card h3 {
+            margin-top: 0;
+        }
+
+        @media (max-width: 600px) {
+            .page-header {
+                padding: 20px;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+
+            .main-nav a {
+                padding: 14px 15px;
+            }
+        }
+
+        .device-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .device-item h4 {
+            margin: 0 0 15px;
+            font-size: 20px;
+            color: #111827;
+        }
+
+        .device-item p {
+            margin: 8px 0;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .device-item strong {
+            color: #111827;
+        }
+
+        .device-status {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .device-status.online {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .device-status.offline {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header class="page-header">
+    <div class="header-content">
+        <h1>MY IoT PLATFORM</h1>
+        <p>IoT Devices</p>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <div class="nav-content">
+        <a href="/">Dashboard</a>
+        <a href="/iot/" class="active">IoT Devices</a>
+        <a href="/electronics">Electronics</a>
+        <a href="/projects">Projects</a>
+        <a href="/about">About</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-title">
+        <h2>IoT Devices</h2>
+        <p>Monitor and manage your connected IoT devices.</p>
+    </div>
+
+    <div class="device-card">
+        <h3>Registered Devices</h3>
+
+        <div id="devicesContainer">
+            <p>Loading devices...</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function loadDevices() {
+
+    const container =
+        document.getElementById("devicesContainer");
+
+    try {
+
+        const response =
+            await fetch("/api/devices");
+
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            result.success &&
+            result.data &&
+            result.data.length > 0
+        ) {
+
+            container.innerHTML = "";
+
+            result.data.forEach(function(device) {
+
+                const deviceElement =
+                    document.createElement("div");
+
+                deviceElement.className = "device-item";
+
+                deviceElement.innerHTML = `
+                    <h4>${device.device_id}</h4>
+
+                    <p>
+                        <strong>Name:</strong>
+                        ${device.device_name ?? "--"}
+                    </p>
+
+                    <p>
+                        <strong>Type:</strong>
+                        ${device.device_type ?? "--"}
+                    </p>
+
+                    <p>
+                        <strong>Location:</strong>
+                        ${device.location ?? "--"}
+                    </p>
+
+                    <p>
+                        <strong>Last Seen:</strong>
+                        ${device.last_seen
+                            ? new Date(device.last_seen).toLocaleString("en-TZ", {
+                                timeZone: "Africa/Dar_es_Salaam",
+                                dateStyle: "medium",
+                                timeStyle: "medium"
+                            })
+                            : "Never"}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+
+                        <span class="device-status ${
+                            device.status === "online" ? "online" : "offline"
+                        }">
+                            ${device.status ?? "offline"}
+                        </span>
+                    </p>
+                `;
+
+                container.appendChild(deviceElement);
+            });
+
+        } else {
+
+            container.innerHTML =
+                "<p>No registered devices found.</p>";
+        }
+
+    } catch (error) {
+
+        console.error("Device loading error:", error);
+
+        container.innerHTML =
+            "<p>Unable to load devices.</p>";
+    }
+}
+
+
+
+loadDevices();
+</script>
+
+</body>
+</html>

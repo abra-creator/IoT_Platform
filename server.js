@@ -92,6 +92,29 @@ app.get("/api/devices/latest", async (req, res) => {
     }
 });
 
+app.get("/api/devices", async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT *
+            FROM devices
+            ORDER BY id DESC
+        `);
+
+        res.json({
+            success: true,
+            data: result.rows
+        });
+
+    } catch (error) {
+        console.error("Get devices error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to load devices"
+        });
+    }
+});
+
 app.get("/api/sensor/history", async (req, res) => {
     try {
         const result = await pool.query(`
@@ -164,9 +187,21 @@ app.post("/api/sensor", async (req, res) => {
             [device_id, temperature, humidity, distance, motion, voltage]
         );
 
-
         console.log("✅ Sensor data saved to database");
 
+        // Update device status and last seen time
+        await pool.query(
+            `
+            UPDATE devices
+            SET
+                status = 'online',
+                last_seen = CURRENT_TIMESTAMP
+            WHERE device_id = $1
+            `,
+            [device_id]
+        );
+
+        console.log("✅ Device status updated");
 
         res.json({
 
@@ -177,7 +212,6 @@ app.post("/api/sensor", async (req, res) => {
             data: result.rows[0]
 
         });
-
 
     } catch (error) {
 
